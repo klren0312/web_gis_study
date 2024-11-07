@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.2/axios.js" integrity="sha512-VGxuOMLdTe8EmBucQ5vYNoYDTGijqUsStF6eM7P3vA/cM1pqOwSBv/uxw94PhhJJn795NlOeKBkECQZ1gIzp6A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<body>
+  <script>
+    const axiosInstance = axios.create({
+      timeout: 10
+    })
+    axiosInstance.interceptors.request.use(
+      config => {
+        console.log('request-config',config.timeout);
+        return config
+      },
+      error => {
+        console.log('请求error:',error);
+        return Promise.reject(error)
+      }
+    )
+
+
+    axiosInstance.interceptors.response.use(
+      response => {
+        console.log('response-config',response.config.timeout);
+        return response
+      },
+      error => {
+        // 对请求错误做些什么
+        console.log('请求错误 error', error);
+        console.log('error.config', error.config);
+        // console.log('请求错误 response', error.response);
+        // console.log('请求错误 code', error.code);
+        if (error.message === 'Network Error') {
+          // Toast.fail("网络断开连接 (Network Error)!");
+          console.log('网络断开连接 (Network Error)!');
+        } else {
+          console.log('其他响应错误：', error);
+        }
+    
+        return Promise.reject(error)
+      }
+    )
+      
+    axiosInstance.get('https://www.baidu.com')
+  </script>
+</body>
+</html>

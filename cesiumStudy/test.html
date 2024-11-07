@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>文字向屏幕外放大扩散消失效果</title>
+<style>
+  .disappear-text {
+    font-size: 2em;
+    color: rgba(255, 215, 0);
+    position: relative;
+    animation: disappear 3s forwards;
+  }
+
+  @keyframes disappear {
+    0% {
+      text-shadow: 0 0 0 rgba(255, 215, 0, 0.7);
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      text-shadow: -10px -10px 20px rgba(255, 215, 0, 0.5);
+      transform: scale(1.5);
+      opacity: 0.5;
+    }
+    100% {
+      text-shadow: -20px -20px 30px rgba(255, 215, 0, 0);
+      transform: scale(2);
+      opacity: 0;
+    }
+  }
+</style>
+</head>
+<body>
+  <h1 class="disappear-text">向屏幕外放大扩散消失的文字</h1>
+</body>
+</html>

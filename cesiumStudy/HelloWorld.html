@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Use correct character set. -->
+    <meta charset="utf-8" />
+    <!-- Tell IE to use the latest, best version. -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <!-- Make the application on mobile take up the full browser screen and disable user scaling. -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no"
+    />
+    <title>Hello World!</title>
+    <script src="./Cesium/Cesium.js"></script>
+    <!-- <script src="./cesium.map.min.js"></script> -->
+    <style>
+      @import url(./Cesium/Widgets/widgets.css);
+      html,
+      body,
+      #cesiumContainer {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="viewer-container"></div>
+    <script src="./js/onlineMap.js"></script>
+    <script src="./js/imgMap.js"></script>
+    <script src="./js/primitive.js"></script>
+    <script>
+      ;(async () => {
+        let viewer = new Cesium.Viewer("viewer-container",{
+          baseLayer:false,
+          baseLayerPicker:false,
+          sceneModePicker:false,
+          navigationHelpButton:false,
+          homeButton:false,
+          skyBox:false,
+          infoBox:false,
+          timeline:false,
+          animation:false,
+          vrButton:false,
+          geocoder:false,
+          fullscreenButton:false,
+          navigationInstructionsInitiallyVisible:false,
+          shouldAnimate:true,
+          creditContainer: document.createElement("div"),
+          // terrainProvider: await Cesium.CesiumTerrainProvider.fromIonAssetId(1),
+        })
+        Cesium.Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIxODJjZDA0MS1kYzNkLTQ1NDEtOGUwYS1iOTA4NGQ2NTc5ZTciLCJpZCI6MjUxOTA0LCJpYXQiOjE3MzAzNDQ3NDh9.wi_r3YgME8d6-U9EEfZqwdhI02ZwboBUpmzXZC-Wai8"
+        viewer.imageryLayers.removeAll()
+        viewer.cesiumWidget.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_CLICK)
+        viewer.cesiumWidget.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK)
+
+        
+        // addGaodeLayer(viewer)
+        // addNaturalEarthIIImagery(viewer)
+        // addOpenStreetMapImagery(viewer)
+        addTiandituLayer(viewer)
+        setBasePrimitive(viewer)
+        setAddPrimitive(viewer)
+
+        const tifLayer = new Cesium.WebMapServiceImageryProvider({        
+          url: 'http://localhost:8080/geoserver/zzes/wms',        // geoserver服务地址
+          layers: 'zzes:china',                                // 工作区名：图层名
+          parameters: {
+            service: 'WMS',
+            format: 'image/png',
+            srs: 'EPSG:4326',
+            transparent: true,
+          }
+        })
+        viewer.imageryLayers.addImageryProvider(tifLayer)
+
+        // geojson矢量加载
+        // viewer.dataSources.add(
+        //   Cesium.GeoJsonDataSource.load(
+        //     "https://geojson.cn/api/china/china.topo.json",
+        //     {
+        //       stroke: Cesium.Color.HOTPINK,
+        //       fill: Cesium.Color.PINK.withAlpha(0.5),
+        //       strokeWidth: 3,
+        //     }
+        //   )
+        // );
+
+        // geojson矢量加载
+        const usaDataSource = await Cesium.GeoJsonDataSource.load(
+          "/cesiumStudy/USA.json",
+          {
+            stroke: Cesium.Color.HOTPINK,
+            fill: Cesium.Color.PINK.withAlpha(0.5),
+            strokeWidth: 3,
+          }
+        )
+        console.log(usaDataSource)
+        let entities = usaDataSource.entities.values;
+        entities.forEach((entity,i)=>{
+          entity.polygon.material = new Cesium.Color.fromRandom({
+            alpha: 0.9
+          });
+          entity.polygon.outline = false;
+          entity.polygon.extrudedHeight = 100000;
+        })
+        viewer.dataSources.add(
+          usaDataSource
+        );
+      })()
+      
+    </script>
+  </body>
+</html>
