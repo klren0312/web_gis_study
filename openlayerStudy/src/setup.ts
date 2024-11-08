@@ -1,6 +1,6 @@
 import Map from 'ol/Map'
 import View from 'ol/View'
-import { OSM } from 'ol/source'
+import { XYZ } from 'ol/source'
 import TileLayer from 'ol/layer/Tile'
 import VectorSource from 'ol/source/Vector'
 import VectorLayer from 'ol/layer/Vector'
@@ -16,7 +16,11 @@ export function setupMap() {
   }))
 
   const raster = new TileLayer({
-    source: new OSM()
+    // source: new OSM()
+    source: new XYZ({
+      crossOrigin: "anonymous",
+      url: "https://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}"
+    })
   })
   map.addLayer(raster)
 
