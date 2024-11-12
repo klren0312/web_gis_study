@@ -1,0 +1,12 @@
+#cesium-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+
+.draw-tools {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  z-index: 1;
+}

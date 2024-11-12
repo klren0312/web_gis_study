@@ -24,49 +24,101 @@
         padding: 0;
         overflow: hidden;
       }
+      .button-group {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        display: flex;
+        z-index: 111;
+      }
+      .get-btn {
+        margin-right: 20px;
+      }
     </style>
   </head>
   <body>
+    <div class="btn-group">
+      <button id="js-get-camera-position-btn" class="get-btn">获取相机位置</button>
+      <button id="js-change-camera-position-btn" class="get-btn">切换相机</button>
+    </div>
     <div id="viewer-container"></div>
     <script src="./js/onlineMap.js"></script>
     <script src="./js/imgMap.js"></script>
     <script src="./js/primitive.js"></script>
+    <script src="./js/entity.js"></script>
     <script>
       ;(async () => {
-        let viewer = new Cesium.Viewer("viewer-container",{
+        Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIxODJjZDA0MS1kYzNkLTQ1NDEtOGUwYS1iOTA4NGQ2NTc5ZTciLCJpZCI6MjUxOTA0LCJpYXQiOjE3MzAzNDQ3NDh9.wi_r3YgME8d6-U9EEfZqwdhI02ZwboBUpmzXZC-Wai8'
+
+        const viewer = new Cesium.Viewer("viewer-container",{
+          selectionIndicator: false,
           baseLayer:false,
           baseLayerPicker:false,
           sceneModePicker:false,
           navigationHelpButton:false,
-          homeButton:false,
+          homeButton:true,
           skyBox:false,
           infoBox:false,
-          timeline:false,
-          animation:false,
+          timeline:true,
+          animation:true,
           vrButton:false,
           geocoder:false,
           fullscreenButton:false,
           navigationInstructionsInitiallyVisible:false,
           shouldAnimate:true,
           creditContainer: document.createElement("div"),
-          // terrainProvider: await Cesium.CesiumTerrainProvider.fromIonAssetId(1),
+          terrainProvider: await Cesium.CesiumTerrainProvider.fromIonAssetId(1),
         })
 
-        viewer.imageryLayers.removeAll()
-        viewer.cesiumWidget.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_CLICK)
-        viewer.cesiumWidget.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK)
+        viewer.camera.setView({
+          destination: { x: -8192890.640005071, y: 29384071.38386532, z: 22685605.43294111 },
+          orientation: {
+              heading: 6.283185307179586,
+              pitch: -1.5683711485994483,
+              roll: 0.0
+          }
+        })
+        // viewer.imageryLayers.removeAll()
+        // viewer.cesiumWidget.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_CLICK)
+        // viewer.cesiumWidget.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK)
 
+        // 隐藏版权信息
+        viewer._cesiumWidget._creditContainer.style.display = "none"
+
+        // 开始高程遮挡效果 
+        viewer.scene.globe.depthTestAgainstTerrain = true;
         
         // addGaodeLayer(viewer)
         // addNaturalEarthIIImagery(viewer)
         // addOpenStreetMapImagery(viewer)
         addTiandituLayer(viewer)
+
+        // 加载图元
         setBasePrimitive(viewer)
         setAddPrimitive(viewer)
 
+        // 加载mars3d地形
+        // const addWorldTerrainAsync = async (viewer) => {
+        //   try {    
+        //     const terrainProvider = await Cesium.CesiumTerrainProvider.fromUrl(
+        //       "//data.mars3d.cn/terrain",
+        //       {
+        //         requestWaterMask: true,
+        //         requestVertexNormals: true,
+        //       }
+        //     );
+
+        //     viewer.terrainProvider = terrainProvider
+        //   } catch (error) {
+        //     console.log(`Failed to add world imagery: ${error}`)
+        //   }
+        // }
+        // await addWorldTerrainAsync()
+
+        // 加载geoserver的tif
         const tifLayer = new Cesium.WebMapServiceImageryProvider({        
           url: 'http://localhost:8080/geoserver/zzes/wms',        // geoserver服务地址
-          layers: 'zzes:china',                                // 工作区名：图层名
+          layers: 'zzes:hf',                                // 工作区名：图层名
           parameters: {
             service: 'WMS',
             format: 'image/png',
@@ -77,18 +129,6 @@
         viewer.imageryLayers.addImageryProvider(tifLayer)
 
         // geojson矢量加载
-        // viewer.dataSources.add(
-        //   Cesium.GeoJsonDataSource.load(
-        //     "https://geojson.cn/api/china/china.topo.json",
-        //     {
-        //       stroke: Cesium.Color.HOTPINK,
-        //       fill: Cesium.Color.PINK.withAlpha(0.5),
-        //       strokeWidth: 3,
-        //     }
-        //   )
-        // );
-
-        // geojson矢量加载
         const usaDataSource = await Cesium.GeoJsonDataSource.load(
           "/cesiumStudy/USA.json",
           {
@@ -97,18 +137,56 @@
             strokeWidth: 3,
           }
         )
-        console.log(usaDataSource)
+        // geojson 添加颜色和高度
         let entities = usaDataSource.entities.values;
         entities.forEach((entity,i)=>{
           entity.polygon.material = new Cesium.Color.fromRandom({
             alpha: 0.9
-          });
+          })
           entity.polygon.outline = false;
           entity.polygon.extrudedHeight = 100000;
         })
         viewer.dataSources.add(
           usaDataSource
-        );
+        )
+
+        // 视角切换
+        function changeCamera () {
+          viewer.camera.setView({
+            destination : Cesium.Cartesian3.fromDegrees(115.335683, 40.904250, 7380.512908188428), // (北京)坐标和高度(米)
+            orientation: {
+              heading : 1.5707949177581213, // east, default value is 0.0 (north)  // 北为0度，90指的是向正东方
+              pitch : -0.17453292519381014,    // default value (looking down) // 平视为0度，-90指的是俯视
+              roll : 0.0000081143193604305                             // default value
+            }
+          })
+        }
+        document.getElementById('js-change-camera-position-btn').addEventListener('click', changeCamera)
+
+        // 获取相机位置，姿态等
+        function getcameraPosInfo(){
+          // 获取 相机姿态信息
+          const head = viewer.scene.camera.heading 
+          const pitch = viewer.scene.camera.pitch
+          const roll  = viewer.scene.camera.roll
+          const info ={'head': head ,'pitch': pitch ,'roll': roll};
+          // 获取位置 wgs84的地心坐标系，x,y坐标值以弧度来表示
+          const position = viewer.scene.camera.positionCartographic //with longitude and latitude expressed in radians and height in meters.
+
+          // 弧度转经纬度
+          const longitude = Cesium.Math.toDegrees(position.longitude).toFixed(6)
+          const latitude =  Cesium.Math.toDegrees(position.latitude).toFixed(6)
+          const height = position.height
+          console.log({
+            lng: longitude,
+            lat:latitude,
+            h:height,
+            mat:info
+          })
+        }
+        document.getElementById('js-get-camera-position-btn').addEventListener('click', getcameraPosInfo)
+
+        drawEntity(viewer)
       })()
       
     </script>
