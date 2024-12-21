@@ -8,12 +8,18 @@ importers:
 
   .:
     dependencies:
+      '@cesium-extends/compass':
+        specifier: ^1.2.2
+        version: 1.2.2(cesium@1.123.1)
       '@cesium-extends/drawer':
         specifier: ^1.3.6
         version: 1.3.6(cesium@1.123.1)
       '@cesium-extends/measure':
         specifier: ^1.1.3
         version: 1.1.3(cesium@1.123.1)
+      '@cesium-extends/zoom-control':
+        specifier: ^1.2.2
+        version: 1.2.2(cesium@1.123.1)
       cesium:
         specifier: ^1.123.1
         version: 1.123.1
@@ -68,6 +74,11 @@ packages:
     peerDependencies:
       cesium: '*'
 
+  '@cesium-extends/compass@1.2.2':
+    resolution: {integrity: sha512-vMt+73kfVYsKuKn2p5dU+VX/EzFpVm54hQUP2HibA+UXmMlVYcqHm2Rt1rUQO4lDIZs0XTUEgr49+7o3oMWCHA==}
+    peerDependencies:
+      cesium: '*'
+
   '@cesium-extends/drawer@1.3.6':
     resolution: {integrity: sha512-FiOXGr+bsnHIsj2AGL3rtKe+FvinDbj9nNubW1rpOVi3IH7J6vaMay1B3cDX9Rq5/3wic/P8KYxwjFh+BSBR8w==}
     peerDependencies:
@@ -85,6 +96,11 @@ packages:
 
   '@cesium-extends/tooltip@1.2.2':
     resolution: {integrity: sha512-RhCjbmol+K2cs7JBbRk6A3cOjNQYm4y5LIGch0UgQ8Zyu+Q8DBpQwOjY8E7oZNMm6vMwJi+Pzv8jmOqfge82nA==}
+    peerDependencies:
+      cesium: '*'
+
+  '@cesium-extends/zoom-control@1.2.2':
+    resolution: {integrity: sha512-QwqNfWgTBUj3rIhscvcosEQ+HGdEJ2Rip18wHFP6xqZt/ZSqmaTktDdOrKPBsoRn/sgeX0xqg+i0y6HxmjvGOg==}
     peerDependencies:
       cesium: '*'
 
@@ -1200,6 +1216,11 @@ snapshots:
     dependencies:
       cesium: 1.123.1
 
+  '@cesium-extends/compass@1.2.2(cesium@1.123.1)':
+    dependencies:
+      '@cesium-extends/common': 1.0.1(cesium@1.123.1)
+      cesium: 1.123.1
+
   '@cesium-extends/drawer@1.3.6(cesium@1.123.1)':
     dependencies:
       '@cesium-extends/common': 1.0.1(cesium@1.123.1)
@@ -1224,6 +1245,11 @@ snapshots:
       cesium: 1.123.1
 
   '@cesium-extends/tooltip@1.2.2(cesium@1.123.1)':
+    dependencies:
+      '@cesium-extends/common': 1.0.1(cesium@1.123.1)
+      cesium: 1.123.1
+
+  '@cesium-extends/zoom-control@1.2.2(cesium@1.123.1)':
     dependencies:
       '@cesium-extends/common': 1.0.1(cesium@1.123.1)
       cesium: 1.123.1

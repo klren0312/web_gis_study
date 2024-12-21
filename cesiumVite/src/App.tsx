@@ -1,21 +1,21 @@
 import { useEffect, useRef, useState } from 'react'
 import {
-  Cartesian3,
-  CesiumTerrainProvider,
   Viewer,
-  Math as CMath,
-  Ion,
-  UrlTemplateImageryProvider
+  WebMapTileServiceImageryProvider,
+  GeographicTilingScheme,
+  Cartesian3,
+  Moon
 } from 'cesium'
 
 import './App.css'
 import {
-  DistanceMeasure,
   DistanceSurfaceMeasure,
-  AreaMeasure,
   AreaSurfaceMeasure,
   Measure
 } from '@cesium-extends/measure'
+
+import Compass from '@cesium-extends/compass'
+import ZoomController from '@cesium-extends/zoom-control'
 
 const measureOptions: {
   label: string;
@@ -23,19 +23,9 @@ const measureOptions: {
   tool: typeof Measure;
 }[] = [
   {
-    label: '距离测量',
-    key: 'Distance',
-    tool: DistanceMeasure,
-  },
-  {
     label: '距离测量(贴地)',
     key: 'SurfaceDistance',
     tool: DistanceSurfaceMeasure,
-  },
-  {
-    label: '面积测量',
-    key: 'Area',
-    tool: AreaMeasure,
   },
   {
     label: '面积测量(贴地)',
@@ -46,27 +36,25 @@ const measureOptions: {
 
 
 function App() {
-  Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIxODJjZDA0MS1kYzNkLTQ1NDEtOGUwYS1iOTA4NGQ2NTc5ZTciLCJpZCI6MjUxOTA0LCJpYXQiOjE3MzAzNDQ3NDh9.wi_r3YgME8d6-U9EEfZqwdhI02ZwboBUpmzXZC-Wai8'
   const viewer = useRef<Viewer>()
   const [activeTool, setActiveTool] = useState<string | null>(null)
   const measure = useRef<Measure>()
+  const compass = useRef<Compass>()
+  const zoomController = useRef<ZoomController>()
 
   const addGaodeLayer = () => {
     if (!viewer.current) {
       return
     }
-    // 底图
-    viewer.current.imageryLayers.addImageryProvider(
-      new UrlTemplateImageryProvider({
-        url: 'https://webst02.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}',
-      })
-    )
-    // 标注
-    viewer.current.imageryLayers.addImageryProvider(
-      new UrlTemplateImageryProvider({
-        url: 'http://webst02.is.autonavi.com/appmaptile?x={x}&y={y}&z={z}&lang=zh_cn&size=1&scale=1&style=8',
-      })
-    )
+    viewer.current.imageryLayers.addImageryProvider(new WebMapTileServiceImageryProvider({
+      url: 'https://trek.nasa.gov/tiles/Mars/EQ/Mars_MOLA_blend200ppx_HRSC_Shade_clon0dd_200mpp_lzw/1.0.0/{Style}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png',
+      layer: 'Mars_MOLA_blend200ppx_HRSC_Shade_clon0dd_200mpp_lzw',
+      style: 'default',
+      format: 'image/png',
+      tileMatrixSetID: 'default028mm',
+      maximumLevel: 6,
+      tilingScheme: new GeographicTilingScheme(),
+    }))
   }
 
   /**
@@ -132,7 +120,7 @@ function App() {
    * 初始化cesium
    */
   const initCesium = async () => {
-    viewer.current = new Viewer("cesium-container",{
+    viewer.current = new Viewer('cesium-container',{
       selectionIndicator: false,
       baseLayer: false,
       baseLayerPicker:false,
@@ -141,25 +129,25 @@ function App() {
       homeButton:true,
       skyBox:false,
       infoBox:false,
-      timeline:true,
-      animation:true,
+      timeline:false,
+      animation:false,
       vrButton:false,
       geocoder:false,
       fullscreenButton:false,
       navigationInstructionsInitiallyVisible:false,
       shouldAnimate:true,
-      creditContainer: document.createElement("div"),
+      creditContainer: document.createElement('div'),
     })
-    // 添加地形
-    const terrainProvider = await CesiumTerrainProvider.fromIonAssetId(1)
-    viewer.current.terrainProvider = terrainProvider
-    // 设置相机位置
-    viewer.current.camera.setView({
-      destination: Cartesian3.fromDegrees(120, 28, 50000),
-      orientation: {
-        heading: CMath.toRadians(0),
-        pitch: CMath.toRadians(-45),
-        roll: CMath.toRadians(0),
+    viewer.current.scene.moon = new Moon()
+
+    compass.current = new Compass(viewer.current)
+    zoomController.current = new ZoomController(viewer.current, {
+      container: document.getElementById('cesium-container') as Element,
+      home: Cartesian3.fromDegrees(-98.57, 39.82, 5000000),
+      tips: {
+        zoomIn: '放大',
+        zoomOut: '缩小',
+        refresh: '重置缩放',
       },
     })
     addGaodeLayer()
@@ -173,8 +161,11 @@ function App() {
     return () => {
       measure.current?.destroy()
       measure.current = undefined
+      compass.current?.destroy()
+      compass.current = undefined
       viewer.current?.destroy()
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   return (
     <div id="cesium-container">

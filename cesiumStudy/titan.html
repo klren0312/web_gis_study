@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Use correct character set. -->
+    <meta charset="utf-8" />
+    <!-- Tell IE to use the latest, best version. -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <!-- Make the application on mobile take up the full browser screen and disable user scaling. -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no"
+    />
+    <title>Hello World!</title>
+    <script src="./Cesium/Cesium.js"></script>
+    <!-- <script src="./cesium.map.min.js"></script> -->
+    <style>
+      @import url(./Cesium/Widgets/widgets.css);
+      html,
+      body,
+      #viewer-container {
+        width: 100vw;
+        height: 100vh;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="viewer-container"></div>
+
+    <script>
+      ;(async () => {
+        const viewer = new Cesium.Viewer("viewer-container",{
+          selectionIndicator: false,
+          baseLayer:false,
+          baseLayerPicker:false,
+          sceneModePicker:false,
+          navigationHelpButton:false,
+          homeButton:true,
+          skyBox:false,
+          infoBox:false,
+          timeline:false,
+          animation:false,
+          vrButton:false,
+          geocoder:false,
+          fullscreenButton:false,
+          navigationInstructionsInitiallyVisible:false,
+          shouldAnimate:true,
+          creditContainer: document.createElement("div"),
+        })
+
+
+        viewer.imageryLayers.removeAll()
+        viewer.cesiumWidget.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_CLICK)
+        viewer.cesiumWidget.screenSpaceEventHandler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK)
+
+        // 隐藏版权信息
+        viewer._cesiumWidget._creditContainer.style.display = "none"
+
+        // 开始高程遮挡效果 
+        viewer.scene.globe.depthTestAgainstTerrain = true;
+        
+        // add wmts
+        viewer.imageryLayers.addImageryProvider(new Cesium.WebMapTileServiceImageryProvider({
+          url: "https://trek.nasa.gov/tiles/Mars/EQ/Mars_MOLA_blend200ppx_HRSC_ClrShade_clon0dd_200mpp_lzw/1.0.0/{Style}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png",
+          style: "default",
+          format: "image/png",
+          tileMatrixSetID: "default028mm",
+          maximumLevel: 6,
+          tilingScheme: new Cesium.GeographicTilingScheme(),
+        }))
+      })()
+      
+    </script>
+  </body>
+</html>
