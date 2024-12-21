@@ -46,9 +46,13 @@ function App() {
     if (!viewer.current) {
       return
     }
+    /**
+     * msss_atlas_simp_clon 灰色
+     * Mars_Viking_MDIM21_ClrMosaic_global_232m 红色
+     */
     viewer.current.imageryLayers.addImageryProvider(new WebMapTileServiceImageryProvider({
-      url: 'https://trek.nasa.gov/tiles/Mars/EQ/Mars_MOLA_blend200ppx_HRSC_Shade_clon0dd_200mpp_lzw/1.0.0/{Style}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png',
-      layer: 'Mars_MOLA_blend200ppx_HRSC_Shade_clon0dd_200mpp_lzw',
+      url: 'https://api.nasa.gov/mars-wmts/catalog/Mars_Viking_MDIM21_ClrMosaic_global_232m/1.0.0/{Style}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png',
+      layer: 'Mars_Viking_MDIM21_ClrMosaic_global_232m',
       style: 'default',
       format: 'image/png',
       tileMatrixSetID: 'default028mm',
