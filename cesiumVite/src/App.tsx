@@ -4,7 +4,6 @@ import {
   WebMapTileServiceImageryProvider,
   GeographicTilingScheme,
   Cartesian3,
-  Moon
 } from 'cesium'
 
 import './App.css'
@@ -142,7 +141,14 @@ function App() {
       shouldAnimate:true,
       creditContainer: document.createElement('div'),
     })
-    viewer.current.scene.moon = new Moon()
+    //隐藏太阳
+    viewer.current.scene.globe.enableLighting = false
+    viewer.current.shadows = false
+    viewer.current.scene.sun.show = false
+    //月亮
+    viewer.current.scene.moon.show=false
+    //大气
+    viewer.current.scene.skyAtmosphere.show=false
 
     compass.current = new Compass(viewer.current)
     zoomController.current = new ZoomController(viewer.current, {
