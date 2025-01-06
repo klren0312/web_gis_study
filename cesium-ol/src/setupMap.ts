@@ -4,6 +4,7 @@ import { XYZ } from 'ol/source'
 import TileLayer from 'ol/layer/Tile'
 import VectorSource from 'ol/source/Vector'
 import VectorLayer from 'ol/layer/Vector'
+// @ts-ignore
 import OLCesium from 'olcs'
 
 export function setup() {
