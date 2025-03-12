@@ -6,6 +6,9 @@ import VectorSource from 'ol/source/Vector'
 import VectorLayer from 'ol/layer/Vector'
 import Draw from 'ol/interaction/Draw'
 import { transform } from 'ol/proj'
+import { LayerList } from './components/LayerList'
+import TileWMS from 'ol/source/TileWMS'
+
 export function setupMap() {
   const map = new Map({
     target: 'map'
@@ -15,20 +18,50 @@ export function setupMap() {
     zoom: 2
   }))
 
+  // 创建图层列表容器
+  const layerListContainer = document.createElement('div');
+  layerListContainer.id = 'layer-list';
+  document.getElementById('map')?.appendChild(layerListContainer);
+
+  // 初始化图层列表
+  const layerList = new LayerList(map, 'layer-list');
+
+  // 创建底图图层
   const raster = new TileLayer({
     // source: new OSM()
     source: new XYZ({
       crossOrigin: "anonymous",
       url: "https://webrd01.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=7&x={x}&y={y}&z={z}"
-    })
+    }),
+    zIndex: 0
   })
-  map.addLayer(raster)
+  
+  // 添加底图到图层列表
+  layerList.addLayer(raster, '高德地图', true);
 
+  // 创建绘制图层
   const source = new VectorSource({wrapX: false})
   const vector = new VectorLayer({
     source
   })
+  // 添加矢量图层到图层列表
+  layerList.addLayer(vector, '绘制图层');
 
+  // 添加第一个 WMS 图层
+  const wmsLayer1 = new TileLayer({
+    source: new TileWMS({
+      url: 'http://150.109.23.64:8080/geoserver/wms',
+      params: {
+        'LAYERS': 'zcdc:hf',
+        'TILED': true,
+        'VERSION': '1.1.1',
+        'SRS': 'EPSG:4326',
+      },
+      serverType: 'geoserver',
+      projection: 'EPSG:4326'
+    })
+  })
+  layerList.addLayer(wmsLayer1, 'WMS图层1');
 
   let draw: Draw | null = null
   function addInteraction() {
@@ -56,12 +89,9 @@ export function setupMap() {
         console.log(leftTopJd,leftTopWd,rightTopJd,rightTopWd,leftBottomJd,leftBottomWd,rightBottomJd,rightBottomWd)
       }
       console.log(extent)
-      map.addLayer(vector)
       draw && map.removeInteraction(draw)
     })
   }
   
-
-
   addInteraction()
 }
