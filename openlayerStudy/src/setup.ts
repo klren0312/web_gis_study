@@ -8,6 +8,8 @@ import Draw from 'ol/interaction/Draw'
 import { transform } from 'ol/proj'
 import { LayerList } from './components/LayerList'
 import TileWMS from 'ol/source/TileWMS'
+import { getArea } from 'ol/sphere'
+import Overlay from 'ol/Overlay'
 
 export function setupMap() {
   const map = new Map({
@@ -56,24 +58,6 @@ export function setupMap() {
     })
   })
   layerList.addLayer(wmsLayer1, '合肥图层');
-
-  // 添加第二个 WMS 图层
-  const wmsLayer2 = new TileLayer({
-    source: new TileWMS({
-      url: 'http://150.109.23.64:8080/geoserver/wms',
-      params: {
-        'LAYERS': 'zcdc:xjxjxj',
-        'TILED': true,
-        'VERSION': '1.1.1',
-        'SRS': 'EPSG:4326'
-      },
-      serverType: 'geoserver',
-      projection: 'EPSG:4326'
-    })
-  })
-  layerList.addLayer(wmsLayer2, '新疆图层');
-
-
 
   // 添加地上生物量碳密度2010图层
   const biomassLayer = new TileLayer({
@@ -142,7 +126,7 @@ export function setupMap() {
   });
   layerList.addLayer(ecologicalLayer, '生态完整性指数2023');
 
-  // addDraw(layerList, map)
+  addDraw(layerList, map)
 }
 
 /**
@@ -150,7 +134,7 @@ export function setupMap() {
  * @param layerList 
  * @param map 
  */
-function addDraw(layerList:  LayerList, map: Map) {
+function addDraw(layerList: LayerList, map: Map) {
   // 创建绘制图层
   const source = new VectorSource({wrapX: false})
   const vector = new VectorLayer({
@@ -167,24 +151,50 @@ function addDraw(layerList:  LayerList, map: Map) {
     })
     map.addInteraction(draw)
     draw.on('drawend', (event) => {
-      // 获取框选范围
-      // 最小经度-最左边界经度
-      // 最小纬度-最下边界纬度
-      // 最大经度-最右边界经度
-      // 最大纬度-最上边界纬度
-      const extent = event.feature.getGeometry()?.getExtent()
-      if (extent) {
-        const leftTopJd = transform([extent[0],extent[3]], 'EPSG:3857', 'EPSG:4326')[0].toFixed(2) // 左上角x坐标（经度）
-        const leftTopWd = transform([extent[0],extent[3]], 'EPSG:3857', 'EPSG:4326')[1].toFixed(2) // 左上角y坐标（纬度）
-        const rightTopJd = transform([extent[2],extent[3]], 'EPSG:3857', 'EPSG:4326')[0].toFixed(2) // 右上角x坐标（经度）
-        const rightTopWd = transform([extent[2],extent[3]], 'EPSG:3857', 'EPSG:4326')[1].toFixed(2) // 右上角y坐标（纬度）
-        const leftBottomJd = transform([extent[0],extent[1]], 'EPSG:3857', 'EPSG:4326')[0].toFixed(2) // 左下角x坐标（经度）
-        const leftBottomWd = transform([extent[0],extent[1]], 'EPSG:3857', 'EPSG:4326')[1].toFixed(2) // 左下角y坐标（纬度）
-        const rightBottomJd = transform([extent[2],extent[1]], 'EPSG:3857', 'EPSG:4326')[0].toFixed(2) // 右下角x坐标（经度）
-        const rightBottomWd = transform([extent[2],extent[1]], 'EPSG:3857', 'EPSG:4326')[1].toFixed(2) // 右下角y坐标（纬度）
+      const geometry = event.feature.getGeometry();
+      const extent = geometry?.getExtent();
+      
+      if (extent && geometry) {
+        // 计算面积
+        const area = getArea(geometry);
+        // 转换为平方公里
+        const areaInKm2 = (area / 1000000).toFixed(2);
+        
+        // 创建显示面积的 HTML 元素
+        const element = document.createElement('div');
+        element.className = 'area-label';
+        element.innerHTML = `${areaInKm2} km²`;
+        element.style.backgroundColor = 'white';
+        element.style.padding = '4px 8px';
+        element.style.borderRadius = '4px';
+        element.style.border = '1px solid #ccc';
+        
+        // 计算多边形的中心点
+        const center = [(extent[0] + extent[2])/2, (extent[1] + extent[3])/2];
+        
+        // 创建并添加 overlay
+        const overlay = new Overlay({
+          element: element,
+          position: center,
+          positioning: 'center-center',
+          offset: [0, 0]
+        });
+        
+        map.addOverlay(overlay);
+        
+        const leftTopJd = transform([extent[0],extent[3]], 'EPSG:3857', 'EPSG:4326')[0].toFixed(2)
+        const leftTopWd = transform([extent[0],extent[3]], 'EPSG:3857', 'EPSG:4326')[1].toFixed(2)
+        const rightTopJd = transform([extent[2],extent[3]], 'EPSG:3857', 'EPSG:4326')[0].toFixed(2)
+        const rightTopWd = transform([extent[2],extent[3]], 'EPSG:3857', 'EPSG:4326')[1].toFixed(2)
+        const leftBottomJd = transform([extent[0],extent[1]], 'EPSG:3857', 'EPSG:4326')[0].toFixed(2)
+        const leftBottomWd = transform([extent[0],extent[1]], 'EPSG:3857', 'EPSG:4326')[1].toFixed(2)
+        const rightBottomJd = transform([extent[2],extent[1]], 'EPSG:3857', 'EPSG:4326')[0].toFixed(2)
+        const rightBottomWd = transform([extent[2],extent[1]], 'EPSG:3857', 'EPSG:4326')[1].toFixed(2)
+        
+        console.log('面积：', areaInKm2, '平方公里')
         console.log(leftTopJd,leftTopWd,rightTopJd,rightTopWd,leftBottomJd,leftBottomWd,rightBottomJd,rightBottomWd)
       }
-      console.log(extent)
+      
       draw && map.removeInteraction(draw)
     })
   }
