@@ -142,17 +142,18 @@ export class LayerList {
     });
   }
   
-  public addLayer(layer: Layer, name: string, isBaseLayer: boolean = false): void {
+  public addLayer(layer: Layer, name: string, isBaseLayer: boolean = false, visible: boolean = true): void {
     const id = `layer-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
     const layerItem: LayerItem = {
       id,
       name,
       layer,
-      visible: true,
+      visible,  // 使用传入的 visible 参数
       isBaseLayer
     };
     
-    this.layers.unshift(layerItem); // 使用 unshift 替代 push
+    layer.setVisible(visible);  // 设置图层的初始显示状态
+    this.layers.unshift(layerItem);
     this.renderLayers();
   }
   
@@ -178,6 +179,8 @@ export class LayerList {
         checkbox.addEventListener('change', () => {
           item.visible = checkbox.checked;
           item.layer.setVisible(item.visible);
+          // 重新应用整个图层顺序，而不是单独添加图层
+          this.updateLayerOrder();
         });
         
         layerListElement.appendChild(layerElement);
